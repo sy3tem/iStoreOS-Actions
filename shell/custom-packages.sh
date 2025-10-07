@@ -42,8 +42,9 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-veth"
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-nft-queue"
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES iptables-nft"
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-ipt-nfqueue"
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES -luci-app-adguardhome
 # bc包（分区扩容插件依赖）
-CUSTOM_PACKAGES="$CUSTOM_PACKAGES bc"
+#CUSTOM_PACKAGES="$CUSTOM_PACKAGES bc"
 
 # ============= 若去除组件 则打开注释 ============================
 # 若去掉istore商店 则打开注释
