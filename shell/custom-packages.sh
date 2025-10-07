@@ -3,8 +3,8 @@
 # ============= 若启用 则打开注释 ============================
 
 # 分区扩容 by sirpdboy 
-CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-partexp"
-CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-i18n-partexp-zh-cn"
+#CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-partexp"
+#CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-i18n-partexp-zh-cn"
 # 酷猫主题 by sirpdboy 
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-theme-kucat"
 # 进阶设置 by sirpdboy 
@@ -18,7 +18,7 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-i18n-partexp-zh-cn"
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-mosdns"
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-i18n-mosdns-zh-cn"
 # Turbo ACC 网络加速
-CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-turboacc"
+#CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-turboacc"
 # 应用过滤 openappfilter.com
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-appfilter"
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-i18n-appfilter-zh-cn"
@@ -38,13 +38,12 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-switch-rtl8366-smi"
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-switch-rtl8367b"
 # 虚拟以太网驱动
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-veth"
-# iptables nfq相关组件
-CUSTOM_PACKAGES="$CUSTOM_PACKAGES iptables-mod-nfqueue"
+# iptables nfq相关组件 - 修正6.1内核包名
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-nft-queue"
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES iptables-nft"
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-ipt-nfqueue"
-CUSTOM_PACKAGES="$CUSTOM_PACKAGES iptables-mod-filter"
-CUSTOM_PACKAGES="$CUSTOM_PACKAGES iptables-mod-conntrack-extra"
-CUSTOM_PACKAGES="$CUSTOM_PACKAGES iptables-mod-ipopt"
-CUSTOM_PACKAGES="$CUSTOM_PACKAGES iptables-mod-nat-extra"
+# bc包（分区扩容插件依赖）
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES bc"
 
 # ============= 若去除组件 则打开注释 ============================
 # 若去掉istore商店 则打开注释
