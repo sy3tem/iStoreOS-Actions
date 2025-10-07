@@ -42,14 +42,12 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-veth"
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-nft-queue"
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES iptables-nft"
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-ipt-nfqueue"
-# bc包（分区扩容插件依赖）
-#CUSTOM_PACKAGES="$CUSTOM_PACKAGES bc"
 
 # ============= 排除有问题的插件 ============================
 # 排除冲突的unishare插件
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES -luci-i18n-unishare-zh-cn -luci-app-unishare"
-# 排除缺失依赖的adguardhome插件
-CUSTOM_PACKAGES="$CUSTOM_PACKAGES -luci-app-adguardhome"
+# 排除所有AdGuardHome相关插件（包括语言包）
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES -luci-app-adguardhome -luci-i18n-adguardhome-zh-cn"
 
 # ============= 若去除组件 则打开注释 ============================
 # 若去掉istore商店 则打开注释
