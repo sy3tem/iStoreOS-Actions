@@ -48,14 +48,14 @@ jobs:
       - name: ⏬ 下载 rootfs.tar.gz
         run: |
           echo "📦 正在下载预构建 rootfs"
-          mkdir -p bin/targets/rockchip/armv8
-          curl -L -o bin/targets/rockchip/armv8/openwrt-rockchip-armv8-generic-rootfs.tar.gz \
-            https://github.com/${{ github.actor }}/iStoreOS-Actions/releases/download/iStoreOS-24.10-${{ inputs.openwrt_rootfs }}-${{ inputs.network_settings }}/istoreos-rockchip-armv8-generic-rootfs.tar.gz
+          mkdir -p bin/targets/armsr/armv8
+          curl -L -o bin/targets/armsr/armv8/openwrt-armvirt-64-default-rootfs.tar.gz \
+            https://github.com/${{ github.actor }}/iStoreOS-Actions/releases/download/iStoreOS-24.10-${{ inputs.openwrt_rootfs }}-${{ inputs.network_settings }}/istoreos-armsr-armv8-generic-rootfs.tar.gz
 
       - name: 🔍 查找rootfs.tar.gz所在路径
         id: find_rootfs
         run: |
-          ROOTFS_FILE=$(find bin/targets/rockchip/armv8/ -type f -name "*rootfs.tar.gz" | head -n1)
+          ROOTFS_FILE=$(find bin/targets/armsr/armv8/ -type f -name "*rootfs.tar.gz" | head -n1)
           echo "✅ Found: $ROOTFS_FILE"
           if [ ! -f "$ROOTFS_FILE" ]; then
             echo "❌ 找不到 rootfs.tar.gz 文件"
@@ -63,7 +63,56 @@ jobs:
           fi
           echo "file=$ROOTFS_FILE" >> $GITHUB_OUTPUT
 
-      - name: 🧱 打包iStoreOS固件
+      - name: ⚙️ 添加RT28网络和LED配置到打包环境
+        run: |
+          echo "添加RT28网络和LED配置文件到打包环境..."
+          
+          # 创建临时目录结构
+          mkdir -p custom_files/etc/board.d
+          
+          # 创建RT28网络配置文件
+          cat > custom_files/etc/board.d/02_network_rt28 << 'EOF'
+          . /lib/functions.sh
+          . /lib/functions/system.sh
+
+          board_config_update
+
+          case "$(board_name)" in
+              h96-max-m2)
+                  # RT28专用网络配置
+                  wan_mac=$(macaddr_generate_from_mmc_cid mmcblk0)
+                  lan_mac=$(macaddr_add "$wan_mac" +1)
+                  ucidef_set_interfaces_lan_wan "eth0.1" "eth0.2"
+                  ucidef_add_switch "switch0" \
+                      "0:lan" "1:lan" "2:lan" "3:wan" "7@eth0"
+                  ;;
+          esac
+
+          board_config_flush
+          EOF
+
+          # 创建RT28 LED配置文件
+          cat > custom_files/etc/board.d/01_leds_rt28 << 'EOF'
+          . /lib/functions.sh
+
+          set_led_config() {
+              case "$(board_name)" in
+                  h96-max-m2)
+                      # RT28专用LED配置
+                      ucidef_set_led_netdev "wlan2g" "WiFi 2.4GHz" "link_blue" "radio0"
+                      ucidef_set_led_netdev "wlan5g" "WiFi 5GHz" "link_green" "radio1"
+                      ;;
+              esac
+          }
+
+          boot_hook_add preinit_main set_led_config
+          EOF
+
+          # 设置执行权限
+          chmod +x custom_files/etc/board.d/02_network_rt28
+          chmod +x custom_files/etc/board.d/01_leds_rt28
+
+      - name: 🧱 打包iStoreOS固件（包含RT28配置）
         uses: sy3tem/amlogic-s9xxx-openwrt@main
         with:
           openwrt_path: ${{ steps.find_rootfs.outputs.file }}
@@ -73,6 +122,7 @@ jobs:
           kernel_repo: ophub/kernel
           kernel_usage: stable
           builder_name: kwonelee
+          custom_files: ./custom_files
 
       - name: 📜 调整.img.gz 文件名
         id: rename
@@ -96,8 +146,17 @@ jobs:
           body: |
             📌 版本： iStoreOS-24.10.2-RELEASE (测试版)
             📟 基础设备： h96-max-m2 (适配RT28网络/LED)
-            🏷️ 平台： Rockchip
+            🏷️ 平台： armsr/armv8
             🧠 内核： ${{ inputs.openwrt_kernel }}
+            
+            🌐 RT28网络配置：
+              - LAN: eth0.1
+              - WAN: eth0.2  
+              - 交换机: 0:lan,1:lan,2:lan,3:wan,7@eth0
+            
+            💡 RT28 LED配置：
+              - WiFi 2.4GHz: link_blue (radio0)
+              - WiFi 5GHz: link_green (radio1)
             
             ⚠️ 注意：此为测试版本，基于h96-max-m2设备适配RT28的网络和LED配置
             
