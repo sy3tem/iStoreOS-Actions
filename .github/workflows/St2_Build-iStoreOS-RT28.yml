@@ -63,61 +63,6 @@ jobs:
           fi
           echo "file=$ROOTFS_FILE" >> $GITHUB_OUTPUT
 
-      - name: ⚙️ 配置RT28网络和LED设置
-        run: |
-          echo "配置RT28专用网络和LED设置..."
-          # 创建临时目录来修改rootfs
-          mkdir -p temp_rootfs
-          tar -xzf ${{ steps.find_rootfs.outputs.file }} -C temp_rootfs/
-          
-          # 配置网络设置
-          cat > temp_rootfs/etc/board.d/02_network << 'EOF'
-          . /lib/functions.sh
-          . /lib/functions/system.sh
-
-          board_config_update
-
-          case "$(board_name)" in
-              h96-max-m2)
-                  # RT28专用网络配置
-                  wan_mac=$(macaddr_generate_from_mmc_cid mmcblk0)
-                  lan_mac=$(macaddr_add "$wan_mac" +1)
-                  ucidef_set_interfaces_lan_wan "eth0.1" "eth0.2"
-                  ucidef_add_switch "switch0" \
-                      "0:lan" "1:lan" "2:lan" "3:wan" "7@eth0"
-                  ;;
-          esac
-
-          board_config_flush
-          EOF
-
-          # 配置LED设置
-          cat > temp_rootfs/etc/board.d/01_leds << 'EOF'
-          . /lib/functions.sh
-
-          set_led_config() {
-              case "$(board_name)" in
-                  h96-max-m2)
-                      # RT28专用LED配置
-                      ucidef_set_led_netdev "wlan2g" "WiFi 2.4GHz" "link_blue" "radio0"
-                      ucidef_set_led_netdev "wlan5g" "WiFi 5GHz" "link_green" "radio1"
-                      ;;
-              esac
-          }
-
-          boot_hook_add preinit_main set_led_config
-          EOF
-
-          # 设置执行权限
-          chmod +x temp_rootfs/etc/board.d/02_network
-          chmod +x temp_rootfs/etc/board.d/01_leds
-          
-          # 重新打包rootfs
-          cd temp_rootfs
-          tar -czf ../modified_rootfs.tar.gz .
-          cd ..
-          mv modified_rootfs.tar.gz ${{ steps.find_rootfs.outputs.file }}
-
       - name: 🧱 打包iStoreOS固件
         uses: sy3tem/amlogic-s9xxx-openwrt@main
         with:
@@ -153,15 +98,6 @@ jobs:
             📟 基础设备： h96-max-m2 (适配RT28网络/LED)
             🏷️ 平台： Rockchip
             🧠 内核： ${{ inputs.openwrt_kernel }}
-            
-            🌐 RT28网络配置：
-              - LAN: eth0.1
-              - WAN: eth0.2  
-              - 交换机: 0:lan,1:lan,2:lan,3:wan,7@eth0
-            
-            💡 RT28 LED配置：
-              - WiFi 2.4GHz: link_blue (radio0)
-              - WiFi 5GHz: link_green (radio1)
             
             ⚠️ 注意：此为测试版本，基于h96-max-m2设备适配RT28的网络和LED配置
             
